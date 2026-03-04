@@ -47,11 +47,16 @@ def _init_schema(conn: sqlite3.Connection) -> None:
             todo_list TEXT,
             summary TEXT,
             reminders TEXT,
+            reminder_dates TEXT,
             created_at TEXT,
             updated_at TEXT,
             PRIMARY KEY (username, id)
         );
     """)
+    try:
+        conn.execute("ALTER TABLE notes ADD COLUMN reminder_dates TEXT")
+    except sqlite3.OperationalError:
+        pass  # column already exists
     conn.commit()
 
 
@@ -76,6 +81,12 @@ def _row_to_note(row: sqlite3.Row) -> Note:
             reminders = json.loads(row["reminders"])
         except (json.JSONDecodeError, TypeError):
             pass
+    reminder_dates = None
+    if row.get("reminder_dates"):
+        try:
+            reminder_dates = json.loads(row["reminder_dates"])
+        except (json.JSONDecodeError, TypeError):
+            pass
     return Note(
         id=row["id"],
         device_id=row["device_id"],
@@ -84,6 +95,7 @@ def _row_to_note(row: sqlite3.Row) -> Note:
         todo_list=todo_list,
         summary=row["summary"],
         reminders=reminders,
+        reminder_dates=reminder_dates,
         created_at=row["created_at"],
         updated_at=row["updated_at"],
     )
@@ -114,10 +126,11 @@ def save_sync(conn: sqlite3.Connection, username: str, device: Device, notes: li
         n_updated = n.updated_at.isoformat() if n.updated_at else None
         todo_json = json.dumps(n.todo_list) if n.todo_list else None
         reminders_json = json.dumps(n.reminders) if n.reminders else None
+        reminder_dates_json = json.dumps(n.reminder_dates) if n.reminder_dates else None
         conn.execute(
             """
-            INSERT INTO notes (id, username, device_id, content, transcription, todo_list, summary, reminders, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO notes (id, username, device_id, content, transcription, todo_list, summary, reminders, reminder_dates, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 note_id,
@@ -128,6 +141,7 @@ def save_sync(conn: sqlite3.Connection, username: str, device: Device, notes: li
                 todo_json,
                 n.summary,
                 reminders_json,
+                reminder_dates_json,
                 n_created,
                 n_updated,
             ),
@@ -147,7 +161,7 @@ def load_sync(conn: sqlite3.Connection, username: str) -> tuple[Device | None, l
     device = _row_to_device(row)
 
     cursor = conn.execute(
-        "SELECT id, device_id, content, transcription, todo_list, summary, reminders, created_at, updated_at FROM notes WHERE username = ? ORDER BY created_at",
+        "SELECT id, device_id, content, transcription, todo_list, summary, reminders, reminder_dates, created_at, updated_at FROM notes WHERE username = ? ORDER BY created_at",
         (username,),
     )
     notes = [_row_to_note(r) for r in cursor.fetchall()]

@@ -1,6 +1,15 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel, Field
+
+
+class ReminderDate(BaseModel):
+    """Date components for a reminder (DD, MM, YYYY, HH, MIN). Used for ICS."""
+    day: int
+    month: int
+    year: int
+    hour: Optional[int] = None
+    minute: Optional[int] = None
 
 
 class Device(BaseModel):
@@ -19,6 +28,7 @@ class Note(BaseModel):
     todo_list: Optional[list[str]] = None
     summary: Optional[str] = None
     reminders: Optional[list[str]] = None
+    reminder_dates: Optional[list[Optional[dict[str, Any]]]] = None  # one per reminder: {day, month, year, hour?, minute?}
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

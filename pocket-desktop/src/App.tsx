@@ -9,6 +9,7 @@ import type {
   Note,
   ProcessedNoteFields,
   PullResult,
+  ReminderDate,
   SyncStatus,
 } from "./types";
 import "./App.css";
@@ -55,6 +56,17 @@ function dateToIcsArray(d: Date): [number, number, number, number, number] {
   ];
 }
 
+/** Build a Date from AI reminder_dates (DD, MM, YYYY, HH, MIN). Month is 1-12. */
+function dateFromReminderDate(rd: ReminderDate): Date {
+  return new Date(
+    rd.year,
+    rd.month - 1,
+    rd.day,
+    rd.hour ?? 9,
+    rd.minute ?? 0,
+  );
+}
+
 /** Build iCalendar (.ics) via ics package, show save dialog, and write file. */
 async function buildIcsAndDownload(notes: Note[]): Promise<void> {
   const now = new Date();
@@ -72,15 +84,20 @@ async function buildIcsAndDownload(notes: Note[]): Promise<void> {
   for (const note of notes) {
     const fallbackTitle =
       note.summary ?? note.transcription?.slice(0, 80) ?? "Note";
-    for (const r of note.reminders ?? []) {
-      const startDate = parseReminderDate(r) ?? defaultStart;
+    const reminderDates = note.reminder_dates ?? [];
+    (note.reminders ?? []).forEach((r, j) => {
+      const rd = reminderDates[j];
+      const startDate =
+        rd && typeof rd === "object" && "day" in rd && "month" in rd && "year" in rd
+          ? dateFromReminderDate(rd)
+          : parseReminderDate(r) ?? defaultStart;
       const title = r.trim() || fallbackTitle;
       eventAttributes.push({
         start: dateToIcsArray(startDate),
         duration: { hours: 1 },
         title,
       });
-    }
+    });
   }
 
   if (eventAttributes.length === 0) {
@@ -468,8 +485,14 @@ export default function App() {
     setProcessingNoteIndex(index);
     try {
       setProcessAiStatus("Processing…");
+      const referenceDate = new Date().toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
       const result = await invoke<ProcessedNoteFields>("process_note_with_ai", {
         noteContent: content,
+        referenceDate,
       });
       setNotes((prev) =>
         prev.map((note, i) =>
@@ -479,6 +502,7 @@ export default function App() {
                 todo_list: result.todo_list,
                 summary: result.summary,
                 reminders: result.reminders,
+                reminder_dates: result.reminder_dates,
               }
             : note,
         ),
@@ -755,9 +779,18 @@ export default function App() {
                       <ul className="reminders-list" aria-label="Reminders">
                         {n.reminders.map((r, j) => {
                           const { priority, text } = parsePriority(r);
-                          const displayText = parseReminderDate(text)
-                            ? formatReminder(text)
-                            : text.trim();
+                          const reminderLabel = text.trim();
+                          const rd = n.reminder_dates?.[j];
+                          const dateLabel =
+                            rd &&
+                            typeof rd === "object" &&
+                            "day" in rd &&
+                            "month" in rd &&
+                            "year" in rd
+                              ? formatReminder(
+                                  dateFromReminderDate(rd as ReminderDate).toISOString(),
+                                )
+                              : null;
                           return (
                             <li key={j} className="reminder-item">
                               <span className="reminder-icon" aria-hidden>
@@ -772,7 +805,13 @@ export default function App() {
                                 </span>
                               )}
                               <span className="reminder-text">
-                                {displayText}
+                                {reminderLabel}
+                                {dateLabel && (
+                                  <span className="reminder-date-suffix">
+                                    {" "}
+                                    — {dateLabel}
+                                  </span>
+                                )}
                               </span>
                             </li>
                           );

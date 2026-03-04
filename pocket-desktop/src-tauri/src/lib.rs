@@ -142,15 +142,17 @@ async fn check_device_health(device_url: String, pairing_code: String) -> Result
     Ok(res.status().is_success())
 }
 
-/// Process note content with OpenAI gpt-4o (todo_list, summary, reminders).
+/// Process note content with OpenAI gpt-4o (todo_list, summary, reminders, reminder_dates).
+/// reference_date: today's date for the AI (e.g. "4 March 2026") so "tonight", "20th March" resolve correctly.
 /// Requires OPENAI_API_KEY in the environment.
 #[tauri::command]
 async fn process_note_with_ai(
     state: tauri::State<'_, ai::AiModelState>,
     note_content: String,
+    reference_date: Option<String>,
     model_id: Option<String>,
 ) -> Result<ai::ProcessedNoteFields, String> {
-    ai::process_note_with_ai(state, note_content, model_id).await
+    ai::process_note_with_ai(state, note_content, reference_date, model_id).await
 }
 
 /// Check backend health.

@@ -4,6 +4,15 @@ export interface Device {
   created_at?: string;
 }
 
+/** Date components for a reminder (from AI). Used for ICS export. */
+export interface ReminderDate {
+  day: number;
+  month: number;
+  year: number;
+  hour?: number;
+  minute?: number;
+}
+
 export interface Note {
   id?: string;
   device_id: string;
@@ -12,6 +21,8 @@ export interface Note {
   todo_list?: string[];
   summary?: string;
   reminders?: string[];
+  /** One per reminder: DD, MM, YYYY, HH, MIN from AI (for ICS). */
+  reminder_dates?: (ReminderDate | null)[];
   created_at?: string;
   updated_at?: string;
 }
@@ -30,9 +41,10 @@ export interface DiscoveredDevice {
   code?: string;
 }
 
-/** Result of AI processing (mistral.rs) for a note. */
+/** Result of AI processing for a note. */
 export interface ProcessedNoteFields {
   todo_list: string[];
   summary: string;
   reminders: string[];
+  reminder_dates?: (ReminderDate | null)[];
 }

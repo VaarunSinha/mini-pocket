@@ -552,6 +552,12 @@ button.active {
   font-variant-numeric: tabular-nums;
 }
 
+.reminder-date-suffix {
+  color: #666;
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+}
+
 .discovered-list {
   list-style: none;
   padding: 0;
@@ -695,6 +701,10 @@ button.active {
   .reminder-priority--low {
     background: #1a3a1a;
     color: #8f8;
+  }
+
+  .reminder-date-suffix {
+    color: #999;
   }
 
   .reminder-icon {
