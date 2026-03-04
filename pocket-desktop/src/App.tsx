@@ -21,7 +21,8 @@ const STORAGE_KEYS = {
   notes: "Mini Pocket_notes",
   backendUrl: "Mini Pocket_backend_url",
   username: "Mini Pocket_username",
-  password: "Mini Pocket_password",
+  /** @internal localStorage key for persisted auth token; not a credential value */
+  password: "Mini Pocket_password", // NOSONAR S2068
   lastSyncAt: "Mini Pocket_last_sync_at",
   completedTodos: "Mini Pocket_completed_todos",
 } as const;
@@ -56,6 +57,16 @@ function dateToIcsArray(d: Date): [number, number, number, number, number] {
   ];
 }
 
+function isReminderDate(x: unknown): x is ReminderDate {
+  return (
+    typeof x === "object" &&
+    x !== null &&
+    "day" in x &&
+    "month" in x &&
+    "year" in x
+  );
+}
+
 /** Build a Date from AI reminder_dates (DD, MM, YYYY, HH, MIN). Month is 1-12. */
 function dateFromReminderDate(rd: ReminderDate): Date {
   return new Date(
@@ -88,7 +99,7 @@ async function buildIcsAndDownload(notes: Note[]): Promise<void> {
     (note.reminders ?? []).forEach((r, j) => {
       const rd = reminderDates[j];
       const startDate =
-        rd && typeof rd === "object" && "day" in rd && "month" in rd && "year" in rd
+        rd && isReminderDate(rd)
           ? dateFromReminderDate(rd)
           : parseReminderDate(r) ?? defaultStart;
       const title = r.trim() || fallbackTitle;
@@ -156,7 +167,7 @@ function todoKey(noteIndex: number, itemIndex: number): string {
   return `${noteIndex}-${itemIndex}`;
 }
 
-/** Parse "[High]", "[Medium]", "[Low]" prefix from todo/reminder string. */
+/** Parse "[High]", "[Medium]", "[Low]" prefix from task/reminder string. */
 function parsePriority(text: string): {
   priority: "high" | "medium" | "low" | null;
   text: string;
@@ -742,7 +753,7 @@ export default function App() {
                           const { priority, text } = parsePriority(item);
                           return (
                             <li
-                              key={j}
+                              key={`todo-${n.id ?? i}-${j}-${text.slice(0, 40)}`}
                               className={`todo-item ${done ? "todo-item--done" : ""}`}
                             >
                               <label className="todo-label">
@@ -782,17 +793,16 @@ export default function App() {
                           const reminderLabel = text.trim();
                           const rd = n.reminder_dates?.[j];
                           const dateLabel =
-                            rd &&
-                            typeof rd === "object" &&
-                            "day" in rd &&
-                            "month" in rd &&
-                            "year" in rd
+                            rd && isReminderDate(rd)
                               ? formatReminder(
-                                  dateFromReminderDate(rd as ReminderDate).toISOString(),
+                                  dateFromReminderDate(rd).toISOString(),
                                 )
                               : null;
                           return (
-                            <li key={j} className="reminder-item">
+                            <li
+                              key={`reminder-${n.id ?? i}-${j}-${reminderLabel.slice(0, 30)}`}
+                              className="reminder-item"
+                            >
                               <span className="reminder-icon" aria-hidden>
                                 <ReminderIcon />
                               </span>
@@ -856,6 +866,7 @@ export default function App() {
             </p>
             <label className="label">
               Pairing code
+              {" "}
               <input
                 type="text"
                 inputMode="numeric"
@@ -900,6 +911,7 @@ export default function App() {
             <h2 id="login-title">Log in to sync</h2>
             <label className="label">
               Username
+              {" "}
               <input
                 type="text"
                 value={loginUsername}
@@ -911,6 +923,7 @@ export default function App() {
             </label>
             <label className="label">
               Password
+              {" "}
               <input
                 type="password"
                 value={loginPassword}

@@ -1,6 +1,6 @@
 # Mini Pocket
 
-A **~2.5 hour** build inspired by [Pocket](https://heypocket.com/now) (YC W26): save and sync notes with on-device voice transcription.
+A **~3 hour** build inspired by [Pocket](https://heypocket.com/now) (YC W26): save and sync notes with on-device voice transcription.
 
 **Stack:** FastAPI backend, Flutter mobile app (pocket_proxy), Tauri desktop app (pocket-desktop).
 
