@@ -6,6 +6,10 @@ A **~3 hour** build inspired by [Pocket](https://heypocket.com/now) (YC W26): sa
 
 ---
 
+https://github.com/user-attachments/assets/a91e5dcf-8b4a-44e1-ba88-72ce62d6426b
+
+
+
 ## Quick start
 
 ### 1. Backend
