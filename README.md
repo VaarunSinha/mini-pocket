@@ -65,7 +65,7 @@ export DATABASE_PATH=/path/to/pocket.db
 
 ## Sherpa ONNX models (git-ignored)
 
-The Flutter app uses [sherpa_onnx](https://github.com/k2-fsa/sherpa-onnx) for on-device Whisper transcription. Model files are **large** and are **not** committed to the repo.
+The Flutter app uses [sherpa_onnx](https://github.com/k2-fsa/sherpa-onnx?tab=readme-ov-file#some-pre-trained-asr-models-non-streaming) for on-device Whisper transcription. Model files are **large** and are **not** committed to the repo.
 
 **Where to put them:**  
 Place the Whisper **tiny.en** assets in:
@@ -97,7 +97,3 @@ These paths are in `.gitignore` so the repo stays small for external viewers.
 ```
 
 ---
-
-## License
-
-Private repository. All rights reserved.
