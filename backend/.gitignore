@@ -1,0 +1,3 @@
+# Local data (SQLite DB)
+data/
+*.db

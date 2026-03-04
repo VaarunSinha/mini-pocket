@@ -1,0 +1,25 @@
+# Sherpa ONNX model files (large; download separately — see README)
+*.onnx
+pocket_proxy/assets/*.onnx
+
+# OS / editor
+.DS_Store
+*.local
+
+# Backend
+backend/venv/
+backend/data/
+backend/.env
+**/__pycache__/
+*.pyc
+
+# Flutter / Dart
+.dart_tool/
+.pub-cache/
+.pub/
+**/build/
+
+# Node / Tauri
+node_modules/
+dist/
+dist-ssr/
