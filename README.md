@@ -56,14 +56,26 @@ npm run tauri dev
 | `BASIC_AUTH_PASSWORD` | Password for API Basic auth.                                         |
 | `DATABASE_PATH`       | Optional. Path to SQLite DB file; default: `backend/data/pocket.db`. |
 
+**Pocket Desktop** (for “Process with AI” — todo list, summary, reminders):
+
+| Variable           | Description                                      |
+| ------------------ | ------------------------------------------------ |
+| `OPENAI_API_KEY`   | Your OpenAI API key (required for AI processing). |
+
 Example:
 
 ```bash
+# Backend
 export BASIC_AUTH_USERNAME=your_username
 export BASIC_AUTH_PASSWORD=your_password
 # optional:
 export DATABASE_PATH=/path/to/pocket.db
+
+# Pocket Desktop (for Process with AI)
+export OPENAI_API_KEY=sk-your-openai-api-key
 ```
+
+Then run `npm run tauri dev` from `pocket-desktop/` so the Tauri process sees the key.
 
 ---
 
